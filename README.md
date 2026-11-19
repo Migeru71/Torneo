@@ -1,42 +1,34 @@
-# Torneo COD: Black Ops II — Registro Oficial
+# Torneo COD: Black Ops II — Registro Oficial (Solo Invitación)
 
-Página web estática (mobile-first) para el registro de participantes, escuadras (máximo 5 integrantes), solicitudes de ingreso, fusiones de equipos y panel de administración con exportación a Excel (`.xlsx`), conectada a **Supabase** y lista para publicar en **GitHub Pages**.
-
-- **Carrera:** Ingeniería en Sistemas Computacionales
-- **Arquitectura:** HTML + CSS + JavaScript puro (`@supabase/supabase-js` v2 vía CDN) + RPCs protegidas con RLS en Supabase.
+Página web estática (mobile-first) para el registro de participantes y escuadras (máximo 5 integrantes) del torneo de **Ingeniería en Sistemas Computacionales**, conectada a **Supabase** y publicada en **GitHub Pages**.
 
 ---
 
-## 1. Probar en local
+## Privacidad y acceso
 
-Desde esta carpeta (`torneo-bo2-registro`), levanta un servidor HTTP simple:
+* **Acceso exclusivo por enlace de invitación (`?inv=<token>`):** El token se valida únicamente del lado de PostgreSQL (`public.torneo_config`); no existe en este repositorio ni en los archivos JS. Quien abra la URL sin el enlace válido verá la pantalla bloqueada sin datos.
+* **Bloqueo de buscadores:** Incluye `robots.txt` (`Disallow: /`) y etiquetas `<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">`.
+* **Solo nicknames públicos:** En el tablero público únicamente se muestran nombres de equipos y `nickname`. Los nombres reales, grados/grupos, números de WhatsApp y PINs quedan protegidos en PostgreSQL mediante RLS.
+* **Sin código de administración en GitHub:** El panel de gestión, resolución de solicitudes, rotación de enlace de invitación y exportación a Excel vive aparte de este repositorio en una carpeta local privada.
+
+---
+
+## Probar en local
 
 ```bash
 python3 -m http.server 8080
 ```
 
-Luego abre en tu navegador:
-- Página pública: `http://localhost:8080`
-- Panel Admin directo: `http://localhost:8080/#admin`
-
-> **Nota:** Para pruebas en el mismo celular conectado a tu Wi-Fi local, abre `http://<tu-IP-local>:8080`.
+Luego abre `http://localhost:8080/?inv=TU_TOKEN_DE_INVITACION`.
 
 ---
 
-## 2. Subir a GitHub y activar GitHub Pages
-
-1. Crea un repositorio nuevo y vacío en GitHub (por ejemplo `torneo-bo2-isc`, **sin** README ni `.gitignore`).
-2. Ejecuta dentro de esta carpeta (`torneo-bo2-registro`):
+## Despliegue en GitHub Pages
 
 ```bash
 git add .
-git commit -m "Sitio de registro Torneo COD Black Ops II ISC"
-git remote add origin https://github.com/<TU_USUARIO>/<TU_REPO>.git
-git push -u origin main
+git commit -m "Actualización del registro"
+git push origin main
 ```
 
-3. En GitHub, entra a tu repositorio → **Settings → Pages**:
-   - **Source:** `Deploy from a branch`
-   - **Branch:** `main` y carpeta `/ (root)` → **Save**
-
-En ~1 minuto quedará publicada en `https://<TU_USUARIO>.github.io/<TU_REPO>/`.
+En GitHub → **Settings → Pages**: rama `main`, carpeta `/ (root)`.

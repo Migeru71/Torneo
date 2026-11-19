@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0a0c0e" />
+  <title>Torneo COD: Black Ops II — Ingeniería en Sistemas Computacionales</title>
+  <meta name="description" content="Registro oficial de participantes y escuadras (máximo 5 integrantes) para el Torneo de Call of Duty: Black Ops II — Ingeniería en Sistemas Computacionales." />
+  <meta property="og:title" content="Torneo COD: Black Ops II — Registro Oficial" />
+  <meta property="og:description" content="Inscríbete con tu equipo o en solitario, consulta escuadras en tiempo real y solicita unirte a equipos incompletos. Carrera: Ingeniería en Sistemas Computacionales." />
+  <meta property="og:type" content="website" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%23090b0e'/%3E%3Cpath d='M12 18h14l6 10 6-10h14L40 34l12 12H38l-6-10-6 10H12l12-12z' fill='%23ff7a00'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+  <script src="./config.js" defer></script>
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <div class="tactical-bg" aria-hidden="true"></div>
+
+  <header class="hud-header">
+    <div class="container">
+      <div class="header-top">
+        <div class="brand-block">
+          <span class="career-badge">INGENIERÍA EN SISTEMAS COMPUTACIONALES</span>
+          <h1 class="hero-title">TORNEO COD: <span>BLACK OPS II</span></h1>
+          <p class="hero-subtitle">Registro oficial de escuadras &bull; Máximo 5 integrantes por equipo</p>
+        </div>
+        <div class="header-actions">
+          <button type="button" id="btn-refresh" class="icon-btn" title="Actualizar tablero" aria-label="Actualizar tablero">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+              <path d="M3 3v5h5" />
+              <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+              <path d="M16 16h5v5" />
+            </svg>
+            <span class="hide-xs">Actualizar</span>
+          </button>
+          <button type="button" id="btn-admin-toggle" class="icon-btn icon-btn-subtle" title="Panel de Administrador" aria-label="Abrir Panel de Administrador">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+            <span class="hide-xs">Admin</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="hud-stats" aria-label="Resumen del torneo">
+        <div class="stat-card">
+          <span class="stat-label">Participantes</span>
+          <strong class="stat-value" id="stat-participantes">0</strong>
+        </div>
+        <div class="stat-card stat-card-ok">
+          <span class="stat-label">Completos (5/5)</span>
+          <strong class="stat-value" id="stat-completos">0</strong>
+        </div>
+        <div class="stat-card stat-card-amber">
+          <span class="stat-label">Incompletos</span>
+          <strong class="stat-value" id="stat-incompletos">0</strong>
+        </div>
+        <div class="stat-card stat-card-cyan">
+          <span class="stat-label">Solitarios</span>
+          <strong class="stat-value" id="stat-solitarios">0</strong>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <nav class="nav-bar" aria-label="Navegación principal">
+    <div class="container nav-inner" role="tablist">
+      <button type="button" id="tab-btn-registro" class="nav-tab active" role="tab" aria-selected="true" aria-controls="panel-registro" data-tab="registro">
+        Registro
+      </button>
+      <button type="button" id="tab-btn-tablero" class="nav-tab" role="tab" aria-selected="false" aria-controls="panel-tablero" data-tab="tablero">
+        Equipos y Jugadores
+      </button>
+      <button type="button" id="tab-btn-admin" class="nav-tab nav-tab-admin" role="tab" aria-selected="false" aria-controls="panel-admin" data-tab="admin" hidden>
+        Panel Admin
+      </button>
+    </div>
+  </nav>
+
+  <main class="container main-content">
+    <!-- PANEL 1: REGISTRO -->
+    <section id="panel-registro" class="tab-panel active" role="tabpanel" aria-labelledby="tab-btn-registro">
+      <div class="panel-card">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Inscripción de Participante</h2>
+            <p class="panel-desc">Completa tus datos reales para validar tu inscripción. Tu teléfono y PIN nunca se muestran públicamente.</p>
+          </div>
+        </div>
+
+        <form id="form-registro" novalidate autocomplete="off">
+          <div class="form-grid">
+            <div class="form-group form-group-full">
+              <label for="reg-nombre">Nombre completo <span class="req">*</span></label>
+              <input type="text" id="reg-nombre" name="nombre" required minlength="3" maxlength="100" placeholder="Ej. Juan Carlos Pérez López" autocomplete="name" />
+            </div>
+
+            <div class="form-group">
+              <label for="reg-grado">Grado y grupo <span class="req">*</span></label>
+              <input type="text" id="reg-grado" name="grado" class="input-uppercase" required minlength="2" maxlength="15" placeholder="Ej. 9N" />
+            </div>
+
+            <div class="form-group">
+              <label for="reg-telefono">Número de WhatsApp <span class="req">*</span></label>
+              <input type="tel" id="reg-telefono" name="telefono" inputmode="numeric" required maxlength="15" placeholder="10 dígitos (ej. 7151234567)" />
+            </div>
+
+            <div class="form-group form-group-full">
+              <label for="reg-pin">PIN personal de 4 dígitos <span class="req">*</span></label>
+              <div class="pin-input-wrap">
+                <input type="password" id="reg-pin" name="pin" inputmode="numeric" required maxlength="4" pattern="\d{4}" placeholder="••••" autocomplete="new-password" />
+                <button type="button" id="btn-toggle-reg-pin" class="btn-pin-toggle" aria-label="Mostrar u ocultar PIN">Mostrar</button>
+              </div>
+              <small class="field-hint">Guarda este PIN: te servirá después si quieres solicitar entrar a un equipo, fusionar tu escuadra o salirte de tu equipo.</small>
+            </div>
+          </div>
+
+          <fieldset class="mode-fieldset">
+            <legend>¿Cómo te vas a registrar? <span class="req">*</span></legend>
+            <div class="mode-cards">
+              <label class="mode-card">
+                <input type="radio" name="reg-modo" value="crear_equipo" checked />
+                <span class="mode-card-body">
+                  <strong>Crear equipo nuevo</strong>
+                  <small>Registra el nombre de una nueva escuadra (máx. 5).</small>
+                </span>
+              </label>
+
+              <label class="mode-card">
+                <input type="radio" name="reg-modo" value="unirse_equipo" />
+                <span class="mode-card-body">
+                  <strong>Ya tengo equipo</strong>
+                  <small>Elige una escuadra ya registrada de la lista.</small>
+                </span>
+              </label>
+
+              <label class="mode-card">
+                <input type="radio" name="reg-modo" value="solitario" />
+                <span class="mode-card-body">
+                  <strong>Participar solitario</strong>
+                  <small>Quedas libre para pedir ingreso a un equipo incompleto.</small>
+                </span>
+              </label>
+            </div>
+          </fieldset>
+
+          <div id="group-crear-equipo" class="conditional-box">
+            <label for="reg-equipo-nombre">Nombre del nuevo equipo <span class="req">*</span></label>
+            <input type="text" id="reg-equipo-nombre" maxlength="40" placeholder="Ej. Nuketown Legends" />
+            <small class="field-hint">Entre 2 y 40 caracteres. Tus compañeros podrán seleccionarlo después en la lista.</small>
+          </div>
+
+          <div id="group-unirse-equipo" class="conditional-box" hidden>
+            <label for="reg-equipo-select">Selecciona tu equipo <span class="req">*</span></label>
+            <select id="reg-equipo-select">
+              <option value="">-- Selecciona un equipo disponible --</option>
+            </select>
+            <p id="reg-equipo-vacio-hint" class="inline-note" hidden>
+              Todavía no hay equipos con lugares disponibles. Cambia a <strong>Crear equipo nuevo</strong> o regístrate como <strong>Solitario</strong>.
+            </p>
+          </div>
+
+          <div id="group-solitario-hint" class="conditional-box" hidden>
+            <p class="inline-note">
+              Quedarás visible en la lista de <strong>Participantes Solitarios</strong>. En cuanto termines, podrás ir a <em>Equipos y Jugadores</em> y enviar una solicitud para unirte a cualquier escuadra incompleta.
+            </p>
+          </div>
+
+          <div id="reg-feedback" class="alert-box" role="status" hidden></div>
+
+          <div class="form-actions">
+            <button type="submit" id="btn-reg-submit" class="btn btn-primary btn-block">
+              CONFIRMAR REGISTRO
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- PANEL 2: TABLERO PÚBLICO -->
+    <section id="panel-tablero" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-tablero" hidden>
+      <div class="board-toolbar">
+        <div class="search-wrap">
+          <input type="search" id="tablero-busqueda" placeholder="Buscar por equipo, jugador o grupo (ej. 9N)..." aria-label="Buscar en el tablero" />
+        </div>
+        <button type="button" id="btn-abrir-salir" class="btn btn-outline btn-sm">
+          Salirme de mi equipo
+        </button>
+      </div>
+
+      <div class="filter-bar" role="group" aria-label="Filtrar vista">
+        <button type="button" class="filter-chip active" data-filter="todos">Todos</button>
+        <button type="button" class="filter-chip" data-filter="incompletos">Equipos incompletos</button>
+        <button type="button" class="filter-chip" data-filter="completos">Equipos completos</button>
+        <button type="button" class="filter-chip" data-filter="solitarios">Solitarios</button>
+      </div>
+
+      <div id="tablero-contenido" class="board-sections">
+        <div class="empty-state">Cargando escuadras y participantes...</div>
+      </div>
+    </section>
+
+    <!-- PANEL 3: ADMINISTRACIÓN -->
+    <section id="panel-admin" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-admin" hidden>
+      <div id="admin-login-box" class="panel-card admin-login-card">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Acceso de Administrador</h2>
+            <p class="panel-desc">Inicia sesión con tu cuenta autorizada de Supabase para ver teléfonos, resolver solicitudes y exportar a Excel.</p>
+          </div>
+        </div>
+        <form id="form-admin-login" novalidate>
+          <div class="form-group">
+            <label for="admin-email">Correo electrónico</label>
+            <input type="email" id="admin-email" required placeholder="admin@ejemplo.com" autocomplete="username" />
+          </div>
+          <div class="form-group">
+            <label for="admin-password">Contraseña</label>
+            <input type="password" id="admin-password" required placeholder="••••••••" autocomplete="current-password" />
+          </div>
+          <div id="admin-login-error" class="alert-box alert-error" role="alert" hidden></div>
+          <button type="submit" id="btn-admin-login" class="btn btn-primary btn-block">
+            INICIAR SESIÓN
+          </button>
+        </form>
+      </div>
+
+      <div id="admin-dashboard" hidden>
+        <div class="admin-topbar panel-card">
+          <div class="admin-topbar-info">
+            <h2 class="panel-title">Centro de Mando (Admin)</h2>
+            <span id="admin-badge-pendientes" class="badge badge-amber">0 pendientes</span>
+          </div>
+          <div class="admin-topbar-actions">
+            <button type="button" id="btn-export-excel" class="btn btn-success btn-sm">
+              Exportar a Excel (.xlsx)
+            </button>
+            <button type="button" id="btn-admin-refresh" class="btn btn-outline btn-sm">
+              Actualizar
+            </button>
+            <button type="button" id="btn-admin-logout" class="btn btn-danger-outline btn-sm">
+              Cerrar sesión
+            </button>
+          </div>
+        </div>
+
+        <div class="admin-subtabs" role="tablist">
+          <button type="button" class="admin-subtab active" data-admin-tab="solicitudes" role="tab" aria-selected="true">
+            Solicitudes
+          </button>
+          <button type="button" class="admin-subtab" data-admin-tab="participantes" role="tab" aria-selected="false">
+            Participantes
+          </button>
+          <button type="button" class="admin-subtab" data-admin-tab="equipos" role="tab" aria-selected="false">
+            Equipos
+          </button>
+        </div>
+
+        <div id="admin-tab-solicitudes" class="admin-panel active">
+          <div class="filter-bar">
+            <button type="button" id="sol-filter-pendientes" class="filter-chip active" data-sol-filter="pendientes">Solo pendientes</button>
+            <button type="button" id="sol-filter-todas" class="filter-chip" data-sol-filter="todas">Historial completo</button>
+          </div>
+          <div id="admin-solicitudes-list" class="admin-stack"></div>
+        </div>
+
+        <div id="admin-tab-participantes" class="admin-panel" hidden>
+          <div class="board-toolbar">
+            <div class="search-wrap">
+              <input type="search" id="admin-part-busqueda" placeholder="Buscar por nombre, teléfono, grupo o equipo..." aria-label="Buscar participante en admin" />
+            </div>
+          </div>
+          <div id="admin-participantes-list" class="admin-stack"></div>
+        </div>
+
+        <div id="admin-tab-equipos" class="admin-panel" hidden>
+          <div id="admin-equipos-list" class="admin-equipos-grid"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL 1: SOLICITUD INDIVIDUAL -->
+  <div id="modal-solicitud-individual" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-ind-title" hidden>
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="modal-ind-title">Solicitar ingreso a equipo</h3>
+        <button type="button" class="modal-close" data-close-modal="modal-solicitud-individual" aria-label="Cerrar">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="modal-ind-equipo-info" class="modal-subtitle"></p>
+
+        <div id="sol-ind-no-solitarios" class="callout callout-amber" hidden>
+          <p>Para solicitar entrar a un equipo, <strong>primero debes estar registrado como Solitario</strong>.</p>
+          <button type="button" class="btn btn-primary btn-sm" data-action="ir-a-registro">
+            Ir a registrarme primero
+          </button>
+        </div>
+
+        <form id="form-solicitud-individual" novalidate>
+          <div id="sol-ind-fields">
+            <div class="form-group">
+              <label for="sol-ind-participante">¿Quién eres? (lista de solitarios) <span class="req">*</span></label>
+              <select id="sol-ind-participante" required>
+                <option value="">-- Selecciona tu nombre --</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="sol-ind-pin">Tu PIN de 4 dígitos <span class="req">*</span></label>
+              <input type="password" id="sol-ind-pin" inputmode="numeric" maxlength="4" pattern="\d{4}" required placeholder="••••" autocomplete="off" />
+            </div>
+
+            <div class="form-group">
+              <label for="sol-ind-mensaje">Mensaje para el administrador (opcional)</label>
+              <textarea id="sol-ind-mensaje" rows="3" maxlength="300" placeholder="Ej. Soy de 9N, llevo laptop y suelo jugar de rusher o soporte..."></textarea>
+              <small class="char-counter"><span id="sol-ind-msg-count">0</span>/300</small>
+            </div>
+
+            <div id="sol-ind-error" class="alert-box alert-error" role="alert" hidden></div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-outline" data-close-modal="modal-solicitud-individual">Cancelar</button>
+              <button type="submit" id="btn-sol-ind-submit" class="btn btn-primary">Enviar solicitud</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: SOLICITUD DE FUSIÓN DE EQUIPOS -->
+  <div id="modal-solicitud-fusion" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-fus-title" hidden>
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="modal-fus-title">Fusionar mi equipo aquí</h3>
+        <button type="button" class="modal-close" data-close-modal="modal-solicitud-fusion" aria-label="Cerrar">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="modal-fus-equipo-info" class="modal-subtitle"></p>
+        <p class="inline-note">Solo el equipo con menos o igual cantidad de integrantes puede solicitar unirse al equipo más grande sin superar 5 jugadores en total.</p>
+
+        <form id="form-solicitud-fusion" novalidate>
+          <div class="form-group">
+            <label for="sol-fus-equipo-origen">Tu equipo actual compatible <span class="req">*</span></label>
+            <select id="sol-fus-equipo-origen" required>
+              <option value="">-- Selecciona tu equipo --</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="sol-fus-participante">¿Quién envía la solicitud? <span class="req">*</span></label>
+            <select id="sol-fus-participante" required disabled>
+              <option value="">-- Primero selecciona tu equipo --</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="sol-fus-pin">Tu PIN de 4 dígitos <span class="req">*</span></label>
+            <input type="password" id="sol-fus-pin" inputmode="numeric" maxlength="4" pattern="\d{4}" required placeholder="••••" autocomplete="off" />
+          </div>
+
+          <div class="form-group">
+            <label for="sol-fus-mensaje">Mensaje opcional</label>
+            <textarea id="sol-fus-mensaje" rows="3" maxlength="300" placeholder="Ej. Somos 2 de 9N, queremos completar los 5 con ustedes..."></textarea>
+            <small class="char-counter"><span id="sol-fus-msg-count">0</span>/300</small>
+          </div>
+
+          <div id="sol-fus-error" class="alert-box alert-error" role="alert" hidden></div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline" data-close-modal="modal-solicitud-fusion">Cancelar</button>
+            <button type="submit" id="btn-sol-fus-submit" class="btn btn-primary">Solicitar fusión</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: SALIRSE DE UN EQUIPO -->
+  <div id="modal-salir-equipo" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-salir-title" hidden>
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="modal-salir-title">Salirme de mi equipo</h3>
+        <button type="button" class="modal-close" data-close-modal="modal-salir-equipo" aria-label="Cerrar">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="salir-no-equipos" class="callout callout-amber" hidden>
+          <p>Aún no hay equipos registrados de los cuales salir.</p>
+        </div>
+
+        <form id="form-salir-equipo" novalidate>
+          <div id="salir-fields">
+            <div class="form-group">
+              <label for="salir-equipo-select">Tu equipo actual <span class="req">*</span></label>
+              <select id="salir-equipo-select" required>
+                <option value="">-- Selecciona tu equipo --</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="salir-participante-select">Tu nombre <span class="req">*</span></label>
+              <select id="salir-participante-select" required disabled>
+                <option value="">-- Primero selecciona tu equipo --</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="salir-pin">Tu PIN de 4 dígitos <span class="req">*</span></label>
+              <input type="password" id="salir-pin" inputmode="numeric" maxlength="4" pattern="\d{4}" required placeholder="••••" autocomplete="off" />
+            </div>
+
+            <div class="callout callout-amber">
+              <p>Al confirmar, pasarás a la lista de <strong>Participantes Solitarios</strong> para poder solicitar ingreso a otro equipo. Si eras el último integrante del equipo, el equipo se eliminará automáticamente.</p>
+            </div>
+
+            <div id="salir-error" class="alert-box alert-error" role="alert" hidden></div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-outline" data-close-modal="modal-salir-equipo">Cancelar</button>
+              <button type="submit" id="btn-salir-submit" class="btn btn-danger">Confirmar salida</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 4: RESETEAR PIN (ADMIN) -->
+  <div id="modal-reset-pin" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-reset-title" hidden>
+    <div class="modal-dialog modal-dialog-sm">
+      <div class="modal-header">
+        <h3 id="modal-reset-title">Restablecer PIN</h3>
+        <button type="button" class="modal-close" data-close-modal="modal-reset-pin" aria-label="Cerrar">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="reset-pin-participante-nombre" class="modal-subtitle"></p>
+        <form id="form-reset-pin" novalidate>
+          <div class="form-group">
+            <label for="reset-pin-nuevo">Nuevo PIN de 4 dígitos <span class="req">*</span></label>
+            <input type="password" id="reset-pin-nuevo" inputmode="numeric" maxlength="4" pattern="\d{4}" required placeholder="••••" autocomplete="new-password" />
+          </div>
+          <div id="reset-pin-error" class="alert-box alert-error" role="alert" hidden></div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline" data-close-modal="modal-reset-pin">Cancelar</button>
+            <button type="submit" id="btn-reset-pin-submit" class="btn btn-primary">Guardar PIN</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+</body>
+</html>
